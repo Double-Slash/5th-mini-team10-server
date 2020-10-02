@@ -1,41 +1,80 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const passport = require('passport');
+const expressSession = require('express-session');
+const expressValidator = require('express-validator');
+const mongoose = require('mongoose');
+const router = require('./routes/index');
+const User = require("./models/user");
+const app = express();
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+//DB Setting 
+mongoose.Promise = global.Promise;
+mongoose.connect(
+  process.env.MONGODB_URI,
+  {useNewUrlParser : true}
+);
+mongoose.set("useCreateIndex", true);
 
-var app = express();
+const db = mongoose.connection;
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+db.once("open", ()=> {
+  console.log("successfully connected to mongoDB");
+})
 
-app.use(logger('dev'));
+
+
+app.set("port", process.env.PORT || 3000);
+app.set("token", process.env.TOKEN || "abc");
+
+app.use(
+  express.urlencoded({
+    extended: false
+  })
+);
+
+app.use(
+  methodOverride("_method", {
+    methods: ["POST", "GET"]
+  })
+);
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser("secret_passcode"));
+app.use(
+  expressSession({
+    secret: "secret_passcode",
+    cookie: {
+      maxAge: 4000000
+    },
+    resave: false,
+    saveUninitialized: false
+  })
+);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req, res, next) => {
+  res.locals.loggedIn = req.isAuthenticated();
+  res.locals.currentUser = req.user;
+  next();
+});
+app.use(expressValidator());
+
+app.use("/", router);
+
+
+const server = app.listen(app.get("port"), () => {
+  console.log(`Server running at ${app.get("port")}`);
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
 
 module.exports = app;
