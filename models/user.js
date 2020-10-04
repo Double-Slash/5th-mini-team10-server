@@ -10,16 +10,18 @@ const userSchema = new Schema(
         lowercase: true,
         unique: true
       },
-      // apiToken: {
-      //   type: String
-      // },
       nickname: {
           type: String,
           trim: true
       },
-      passwd : {
-
-      }
+      password : {
+          type : String
+      },
+      weekChallengeCount: { 
+          type: Number, 
+          default: 0 
+      },
+      id: mongoose.Schema.Types.ObjectId
     },
     {
       timestamps: true
