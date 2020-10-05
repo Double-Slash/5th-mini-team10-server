@@ -11,10 +11,11 @@ const router = require('./routes/index');
 const User = require("./models/user");
 const app = express();
 
+require('dotenv').config({path : './process.env'});
 //DB Setting 
 mongoose.Promise = global.Promise;
 mongoose.connect(
-  process.env.MONGODB_URI,
+  process.env.DB_HOST,
   {useNewUrlParser : true}
 );
 mongoose.set("useCreateIndex", true);
@@ -25,10 +26,12 @@ db.once("open", ()=> {
   console.log("successfully connected to mongoDB");
 })
 
-
+db.on("error", (error) =>{
+  console.log(`Error : ${error}`)
+})
 
 app.set("port", process.env.PORT || 3000);
-app.set("token", process.env.TOKEN || "abc");
+//app.set("jwt", process.env.TOKEN);
 
 app.use(
   express.urlencoded({
@@ -36,11 +39,12 @@ app.use(
   })
 );
 
-app.use(
-  methodOverride("_method", {
-    methods: ["POST", "GET"]
-  })
-);
+//app.use(
+//  methodOverride("_method", {
+//    methods: ["POST", "GET"]
+//  })
+//);
+
 
 app.use(express.json());
 app.use(cookieParser("secret_passcode"));
@@ -62,15 +66,10 @@ passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-app.use((req, res, next) => {
-  res.locals.loggedIn = req.isAuthenticated();
-  res.locals.currentUser = req.user;
-  next();
-});
-app.use(expressValidator());
 
-app.use("/", router);
+//app.use(expressValidator());
 
+app.use('/', router);
 
 const server = app.listen(app.get("port"), () => {
   console.log(`Server running at ${app.get("port")}`);
