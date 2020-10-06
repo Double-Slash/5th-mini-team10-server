@@ -39,12 +39,6 @@ app.use(
   })
 );
 
-//app.use(
-//  methodOverride("_method", {
-//    methods: ["POST", "GET"]
-//  })
-//);
-
 
 app.use(express.json());
 app.use(cookieParser("secret_passcode"));

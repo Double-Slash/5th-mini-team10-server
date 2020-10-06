@@ -1,14 +1,9 @@
 const router = require('express').Router();
 const userController = require('../controllers/userController');
 
-router.post('/create', userController.validate, userController.create, userController.apiAuthenticate ); //signUp
-router.post('/login', userController.apiAuthenticate); 
-router.use(userController.verifyJWT);
-router.get('/logout', userController.logout);
-
-router.use(userController.errorJSON);
-
-
-
-
+router.post('/signup', userController.signUp);
+router.post('/login', userController.authSignIn); 
+router.get('/rank', userController.getRank);
+  
 module.exports = router;
+
