@@ -19,7 +19,7 @@ module.exports = {
     let newUser = new User(getUserParams(req.body));
     User.register(newUser, req.body.password, (error, user) => { 
       if (user) {
-        res.json({ success: true, user});
+        res.json({ success: true});
       } else {
         console.log(error);
         res.json({success: false});
@@ -36,7 +36,7 @@ module.exports = {
             data: user._id,
             exp: new Date().setDate(new Date().getDate() + 7)
           },
-          process.env.TOKEN
+          'aa'
         );
         res.json({
           success: true,
@@ -55,7 +55,7 @@ module.exports = {
   verifyJWT: (req, res, next) => {
     let token = req.headers.token;
     if (token) {
-      jsonWebToken.verify(token, process.env.TOKEN, (errors, payload) => {
+      jsonWebToken.verify(token, 'aa', (errors, payload) => {
         if (payload) {
           User.findById(payload.data).then(user => {
             if (user) {
