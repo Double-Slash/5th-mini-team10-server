@@ -85,6 +85,21 @@ module.exports = {
     }
   },
 
+  getRank : (req,res) =>{
+    User.find({},{nickname:1, weekChallengeCount:1})
+      .sort('-weekChallengeCount')
+      .limit(10)
+      .then(users =>{
+        res.json({ 
+          success : true,
+          user : users
+        });
+      })
+      .catch(error => {
+        console.log(`Error : ${error.message}`);
+      });
+  }
+
 };
 
 
