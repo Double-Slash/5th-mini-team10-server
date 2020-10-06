@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const SubChallenge = require("./subChallenge");
+const Subchallenge = require("./subchallenge");
 
 const challengeSchema = new Schema(
     {
@@ -13,7 +13,7 @@ const challengeSchema = new Schema(
       text: {
         type: String
       },
-      subChallenge: [{ type: Schema.Types.ObjectId, ref: "SubChallenge" }],
+      subchallenges: [{ type: Schema.Types.ObjectId, ref: "Subchallenge" }],
       id: mongoose.Schema.Types.ObjectId //chllengeId 
     }
 );
