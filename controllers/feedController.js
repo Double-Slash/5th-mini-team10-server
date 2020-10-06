@@ -1,78 +1,53 @@
 const Feed = require("../models/feed");
 const httpStatus = require("http-status-codes");
 
+
 module.exports = {
   show: (req, res, next) => {
-    Feed.find({})
+    Feed.find({}).populate('user','nickname')
       .then(feeds => {
         res.json({
-            status: httpStatus.OK,
-            data: feeds
+            //status: httpStatus.OK,
+            success : true,
+            feed: feeds
         });
-        next();
       })
       .catch(error => {
         console.log(`Error fetching feeds: ${error.message}`);
+        res.json({success : false})
         next(error);
       });
   },
 
-  upload: (req, res, next) => {
-    let feedParams = {
-      //file using multer
-    };
-    Feed.create(feedParams)
-      .then(feed => {
-        //upload complete
-        next();
-      })
-      .catch(error => {
-        console.log(`Error uploading feed: ${error.message}`);
-        next(error);
-      });
+  uploadFile: (req, res, next) => {
+    let userId = res.user._id;
+    const image = req.file.path;
+    const fee= 
+      {
+        imageUrl: image,
+        user : userId
+      };
+    let newFeed = new Feed(fee);
+    Feed.create(newFeed)
+        .then(feed => {
+          res.json({success : true});
+        })
+        .catch(error => {
+          console.log(`Error uploading feed: ${error.message}`);
+          res.json({success : false})
+          next(error);
+        });
   },
 
   showDetail: (req, res, next) => {
     let feedId = req.params.id;
     Feed.findById(feedId)
-      .then(feed => {
-        res.json({
-            status: httpStatus.OK,
-            data: feed
-        });
-        next();
+      .then(data => {
+        res.json({success :true, feed :data});
       })
       .catch(error => {
         console.log(`Error fetching feed by ID: ${error.message}`);
         next(error);
       });
-  },
-
-  delete: (req, res, next) => {
-    let feedId = req.params.id;
-    Feed.findByIdAndRemove(feedId)
-      .then(() => {
-        next();
-      })
-      .catch(error => {
-        console.log(`Error deleting feed by ID: ${error.message}`);
-        next();
-      });
-  },
-
-  errorJSON: (error, req, res, next) => {
-    let errorObject;
-    if (error) {
-      errorObject = {
-        status: httpStatus.INTERNAL_SERVER_ERROR,
-        message: error.message
-      };
-    } else {
-      errorObject = {
-        status: httpStatus.INTERNAL_SERVER_ERROR,
-        message: "Unknown Error."
-      };
-    }
-    res.json(errorObject);
   }
 };
